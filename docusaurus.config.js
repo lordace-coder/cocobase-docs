@@ -30,7 +30,7 @@ const config = {
   organizationName: "lordace-coder", // Usually your GitHub org/user name.
   projectName: "cocobase", // Usually your repo name.
 
-  onBrokenLinks: "throw",
+  onBrokenLinks: "warn",
   onBrokenMarkdownLinks: "warn",
 
   // Even if you don't use internationalization, you can use this field to set
@@ -96,7 +96,7 @@ const config = {
             items: [
               {
                 label: "Tutorial",
-                to: "/docs/intro",
+                to: "/",
               },
             ],
           },
@@ -120,10 +120,7 @@ const config = {
           {
             title: "More",
             items: [
-              {
-                label: "Blog",
-                to: "/blog",
-              },
+             
               {
                 label: "GitHub",
                 href: "https://github.com/facebook/docusaurus",
