@@ -72,7 +72,7 @@ const config = {
         title: "CocoBase",
         logo: {
           alt: "CocoBase Logo",
-          src: "img/logo.svg",
+          src: "https://cocomailer.cocobase.buzz/assets/site-logo-Dq4izFzY.png",
         },
         items: [
           {
@@ -120,7 +120,6 @@ const config = {
           {
             title: "More",
             items: [
-             
               {
                 label: "GitHub",
                 href: "https://github.com/facebook/docusaurus",
