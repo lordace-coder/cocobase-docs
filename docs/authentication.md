@@ -26,12 +26,16 @@ Cocobase authentication includes:
 import db from "../lib/cocobase";
 
 // Register a new user
-const newUser = await db.register("user@example.com", "securePassword123");
-console.log("User registered:", newUser.email);
+await db.register("user@example.com", "securePassword123");
+if (await db.isAuthenticated()) {
+  console.log("User registered:", db.user.email);
+}
 
 // Login an existing user
-const user = await db.login("user@example.com", "securePassword123");
-console.log("User logged in:", user.email);
+await db.login("user@example.com", "securePassword123");
+if (await db.isAuthenticated()) {
+  console.log("User logged in:", db.user.email);
+}
 
 // Logout the current user
 await db.logout();
@@ -40,18 +44,22 @@ console.log("User logged out");
 
 ## User Registration
 
+> **Note:** You do not need to call `login` after `register`. The `register` method automatically logs in the user upon successful registration. Both `register` and `login` now return `null`. To access the current user, use `db.user` after registration or login. To check if a user is authenticated, use `await db.isAuthenticated()`.
+
 The `register` method creates a new user account and automatically logs them in.
 
 ### Basic Registration
 
 ```typescript
 // Simple registration with email and password
-const user = await db.register("john@example.com", "mySecurePassword");
+await db.register("john@example.com", "mySecurePassword");
 
-console.log("New user created:");
-console.log("ID:", user.id);
-console.log("Email:", user.email);
-console.log("Created at:", user.createdAt);
+if (db.isAuthenticated()) {
+  console.log("New user created:");
+  console.log("ID:", db.user.id);
+  console.log("Email:", db.user.email);
+  console.log("Created at:", db.user.createdAt);
+}
 ```
 
 ### Registration with Additional Data
@@ -60,7 +68,7 @@ You can include additional user data during registration:
 
 ```typescript
 // Register user with profile information
-const user = await db.register("jane@example.com", "password123", {
+await db.register("jane@example.com", "password123", {
   name: "Jane Smith",
   role: "admin",
   department: "Engineering",
@@ -70,8 +78,10 @@ const user = await db.register("jane@example.com", "password123", {
   },
 });
 
-console.log("User registered with profile:", user.name);
-console.log("User role:", user.role);
+if (db.isAuthenticated()) {
+  console.log("User registered with profile:", db.user.name);
+  console.log("User role:", db.user.role);
+}
 ```
 
 ### Registration Examples
@@ -79,7 +89,7 @@ console.log("User role:", user.role);
 **E-commerce User Registration**
 
 ```typescript
-const customer = await db.register("customer@shop.com", "password123", {
+await db.register("customer@shop.com", "password123", {
   firstName: "Alice",
   lastName: "Johnson",
   phone: "+1234567890",
@@ -95,12 +105,16 @@ const customer = await db.register("customer@shop.com", "password123", {
     smsUpdates: false,
   },
 });
+
+if (await db.isAuthenticated()) {
+  console.log("Customer registered:", db.user.firstName);
+}
 ```
 
 **Team Member Registration**
 
 ```typescript
-const teamMember = await db.register("dev@company.com", "securePass", {
+await db.register("dev@company.com", "securePass", {
   name: "Bob Developer",
   role: "developer",
   team: "frontend",
@@ -108,12 +122,16 @@ const teamMember = await db.register("dev@company.com", "securePass", {
   skills: ["React", "TypeScript", "Node.js"],
   manager: "manager-user-id",
 });
+
+if (db.isAuthenticated()) {
+  console.log("Team member registered:", db.user.name);
+}
 ```
 
 **Student Registration**
 
 ```typescript
-const student = await db.register("student@university.edu", "studentPass", {
+await db.register("student@university.edu", "studentPass", {
   firstName: "Sarah",
   lastName: "Wilson",
   studentId: "STU2024001",
@@ -121,23 +139,28 @@ const student = await db.register("student@university.edu", "studentPass", {
   year: "sophomore",
   courses: [],
 });
+
+if (db.isAuthenticated()) {
+  console.log("Student registered:", db.user.firstName);
+}
 ```
 
 ## User Login
 
-The `login` method authenticates users with their email and password.
+The `login` method authenticates users with their email and password. It now returns `null`. Use `db.user` to access the current user after login, and `await db.isAuthenticated()` to check authentication status.
 
 ### Basic Login
 
 ```typescript
 try {
-  const user = await db.login("user@example.com", "password123");
+  await db.login("user@example.com", "password123");
 
-  console.log("Login successful!");
-  console.log("Welcome back,", user.name || user.email);
-
-  // Redirect to dashboard or home page
-  window.location.href = "/dashboard";
+  if (db.isAuthenticated()) {
+    console.log("Login successful!");
+    console.log("Welcome back,", db.user.name || db.user.email);
+    // Redirect to dashboard or home page
+    window.location.href = "/dashboard";
+  }
 } catch (error) {
   console.error("Login failed:", error.message);
   // Show error message to user
@@ -149,14 +172,21 @@ try {
 ```typescript
 async function handleLogin(email, password) {
   try {
-    const user = await db.login(email, password);
+    await db.login(email, password);
 
-    // Login successful
-    return {
-      success: true,
-      user: user,
-      message: "Login successful!",
-    };
+    if (db.isAuthenticated()) {
+      // Login successful
+      return {
+        success: true,
+        user: db.user,
+        message: "Login successful!",
+      };
+    } else {
+      return {
+        success: false,
+        message: "Login failed. Please try again.",
+      };
+    }
   } catch (error) {
     // Handle different types of login errors
     let errorMessage = "Login failed. Please try again.";
@@ -193,10 +223,8 @@ Cocobase automatically handles user sessions, including token storage and persis
 
 ```typescript
 // Get the currently logged-in user
-const currentUser = await db.getCurrentUser();
-
-if (currentUser) {
-  console.log("User is logged in:", currentUser.email);
+if (db.isAuthenticated()) {
+  console.log("User is logged in:", db.user.email);
 } else {
   console.log("No user is logged in");
   // Redirect to login page
@@ -207,7 +235,7 @@ if (currentUser) {
 
 ```typescript
 // Check if a user is currently authenticated
-const isAuthenticated = await db.isAuthenticated();
+const isAuthenticated = db.isAuthenticated();
 
 if (isAuthenticated) {
   console.log("User is authenticated");
@@ -227,10 +255,8 @@ Sessions are automatically persisted across browser sessions and app restarts:
 // When user returns to your app, their session is restored
 
 window.addEventListener("load", async () => {
-  const user = await db.getCurrentUser();
-
-  if (user) {
-    console.log("Welcome back,", user.email);
+  if (await db.isAuthenticated()) {
+    console.log("Welcome back,", db.user.email);
     // User is still logged in from previous session
   }
 });
@@ -242,13 +268,13 @@ The `logout` method signs out the current user and clears their session.
 
 ```typescript
 // Simple logout
-await db.logout();
+db.logout();
 console.log("User logged out successfully");
 
 // Logout with redirect
 async function handleLogout() {
   try {
-    await db.logout();
+    db.logout();
     console.log("Logged out successfully");
 
     // Redirect to login page

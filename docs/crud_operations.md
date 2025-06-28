@@ -1,8 +1,9 @@
 ---
 sidebar_position: 4
-
+slug: /crud-operations
 title: Basic Crud Operations
 ---
+
 # CRUD Operations
 
 Master data management with Cocobase's intuitive CRUD (Create, Read, Update, Delete) operations. This guide covers everything from basic operations to advanced querying and real-time updates.
@@ -14,38 +15,16 @@ Master data management with Cocobase's intuitive CRUD (Create, Read, Update, Del
 The `createDocument` method adds new documents to your collections:
 
 ```typescript
-import db from '../lib/cocobase';
+import db from "../lib/cocobase";
 
 // Create a simple document
-const user = await db.createDocument('users', {
-  name: 'John Doe',
-  email: 'john@example.com',
-  age: 30
+const user = await db.createDocument("users", {
+  name: "John Doe",
+  email: "john@example.com",
+  age: 30,
 });
 
 console.log(user.id); // Auto-generated document ID
-```
-
-#### With Custom ID
-
-```typescript
-// Create document with custom ID
-const post = await db.createDocument('posts', {
-  title: 'My First Post',
-  content: 'Hello, world!',
-  authorId: user.id
-}, 'my-custom-post-id');
-```
-
-#### Batch Creation
-
-```typescript
-// Create multiple documents at once
-const posts = await db.createDocuments('posts', [
-  { title: 'Post 1', content: 'Content 1' },
-  { title: 'Post 2', content: 'Content 2' },
-  { title: 'Post 3', content: 'Content 3' }
-]);
 ```
 
 ### Reading Documents
@@ -54,12 +33,12 @@ const posts = await db.createDocuments('posts', [
 
 ```typescript
 // Get document by ID
-const user = await db.getDocument('users', 'user-id-123');
+const user = await db.getDocument("users", "user-id-123");
 
 if (user) {
   console.log(user.name);
 } else {
-  console.log('User not found');
+  console.log("User not found");
 }
 ```
 
@@ -67,28 +46,27 @@ if (user) {
 
 ```typescript
 // Get all documents in a collection
-const allUsers = await db.listDocuments('users');
+const allUsers = await db.listDocuments("users");
 
 console.log(`Found ${allUsers.length} users`);
-allUsers.forEach(user => console.log(user.name));
+allUsers.forEach((user) => console.log(user.name));
 ```
 
 #### With Pagination
 
 ```typescript
 // Paginated results
-const result = await db.listDocuments('posts', {
+const result = await db.listDocuments("posts", {
   limit: 10,
-  offset: 0
+  offset: 0,
 });
 
 console.log(`Page 1: ${result.documents.length} posts`);
-console.log(`Total: ${result.total} posts`);
 
 // Get next page
-const nextPage = await db.listDocuments('posts', {
+const nextPage = await db.listDocuments("posts", {
   limit: 10,
-  offset: 10
+  offset: 10,
 });
 ```
 
@@ -98,50 +76,23 @@ const nextPage = await db.listDocuments('posts', {
 
 ```typescript
 // Replace entire document
-const updatedUser = await db.updateDocument('users', 'user-id-123', {
-  name: 'Jane Doe',
-  email: 'jane@example.com',
+const updatedUser = await db.updateDocument("users", "user-id-123", {
+  name: "Jane Doe",
+  email: "jane@example.com",
   age: 28,
-  lastLogin: new Date()
+  lastLogin: new Date(),
 });
 ```
 
 #### Partial Update
 
+If fields that do not exist in the model are added to the request they will be added as well.And fields that exist already will be updated.Fields that are not included will remain the same.
+
 ```typescript
 // Update only specific fields
-const updatedUser = await db.updateDocument('users', 'user-id-123', {
+const updatedUser = await db.updateDocument("users", "user-id-123", {
   lastLogin: new Date(),
-  loginCount: 5
-}, { merge: true }); // merge: true for partial updates
-```
-
-#### Increment/Decrement Operations
-
-```typescript
-// Increment numeric fields
-await db.updateDocument('posts', 'post-id-123', {
-  views: db.increment(1),
-  likes: db.increment(5)
-});
-
-// Decrement
-await db.updateDocument('users', 'user-id-123', {
-  credits: db.increment(-10)
-});
-```
-
-#### Array Operations
-
-```typescript
-// Add items to array
-await db.updateDocument('posts', 'post-id-123', {
-  tags: db.arrayUnion(['javascript', 'typescript'])
-});
-
-// Remove items from array
-await db.updateDocument('posts', 'post-id-123', {
-  tags: db.arrayRemove(['old-tag'])
+  loginCount: 5,
 });
 ```
 
@@ -151,30 +102,7 @@ await db.updateDocument('posts', 'post-id-123', {
 
 ```typescript
 // Delete a document
-await db.deleteDocument('users', 'user-id-123');
-```
-
-#### Delete Multiple Documents
-
-```typescript
-// Delete multiple documents by IDs
-await db.deleteDocuments('posts', [
-  'post-id-1',
-  'post-id-2',
-  'post-id-3'
-]);
-```
-
-#### Conditional Delete
-
-```typescript
-// Delete documents matching criteria
-await db.deleteDocuments('users', {
-  where: [
-    ['status', '==', 'inactive'],
-    ['lastLogin', '<', new Date('2023-01-01')]
-  ]
-});
+await db.deleteDocument("users", "user-id-123");
 ```
 
 ## Advanced Querying
@@ -185,195 +113,110 @@ await db.deleteDocuments('users', {
 
 ```typescript
 // Simple equality filter
-const activeUsers = await db.listDocuments('users', {
-  where: [['status', '==', 'active']]
+const activeUsers = await db.listDocuments("users", {
+  filters: {
+    status: "active",
+  },
 });
 
 // Multiple filters (AND operation)
-const recentPosts = await db.listDocuments('posts', {
-  where: [
-    ['published', '==', true],
-    ['createdAt', '>', new Date('2024-01-01')]
-  ]
+
+// To use the [ db.user?.id] the user has to be authenticated.
+// Confirm a user is authenticated by running [db.isAuthenticated()]
+const recentPosts = await db.listDocuments("posts", {
+  filters: {
+    published: true,
+    author: db.user?.id,
+  },
 });
 ```
 
-#### Comparison Operators
+#### Advanced Queries
 
-```typescript
-// Greater than
-const adultUsers = await db.listDocuments('users', {
-  where: [['age', '>', 18]]
-});
-
-// Less than or equal
-const recentPosts = await db.listDocuments('posts', {
-  where: [['createdAt', '<=', new Date()]]
-});
-
-// Not equal
-const nonAdmins = await db.listDocuments('users', {
-  where: [['role', '!=', 'admin']]
-});
-
-// In array
-const specificUsers = await db.listDocuments('users', {
-  where: [['id', 'in', ['user1', 'user2', 'user3']]]
-});
-
-// Not in array
-const excludedUsers = await db.listDocuments('users', {
-  where: [['role', 'not-in', ['banned', 'suspended']]]
-});
-```
-
-#### Array Queries
+To check if a field contains a certain block of text prefix the field name with '\_contains' in the filter object.
 
 ```typescript
 // Array contains
-const jsDevs = await db.listDocuments('users', {
-  where: [['skills', 'array-contains', 'javascript']]
-});
-
-// Array contains any
-const webDevs = await db.listDocuments('users', {
-  where: [['skills', 'array-contains-any', ['html', 'css', 'javascript']]]
+const jsDevs = await db.listDocuments("users", {
+  filters: {
+    skills_contains: "javascript",
+  },
 });
 ```
 
-#### Text Search
+Multiple conditions in your filters will be treated as an AND query and will only returns documents that match all the given conditions.
 
 ```typescript
-// Text search (case-insensitive)
-const searchResults = await db.listDocuments('posts', {
-  where: [['title', 'contains', 'react']]
-});
-
-// Starts with
-const nameSearch = await db.listDocuments('users', {
-  where: [['name', 'startsWith', 'John']]
-});
-
-// Ends with
-const emailSearch = await db.listDocuments('users', {
-  where: [['email', 'endsWith', '@company.com']]
+// User is above 18 and is a graduate
+// _gte used to check for Greater Than, only use this for number fields
+const youngGraduates = await db.listDocuments("users", {
+  filters: {
+    age_gte: 18,
+    graduate: true,
+  },
 });
 ```
 
-### Sorting
+⚙️ **Filter Operators Reference**
 
-```typescript
-// Sort by single field
-const usersByAge = await db.listDocuments('users', {
-  orderBy: [['age', 'desc']]
-});
+| Operator | Example               | Description                      |
+| -------- | --------------------- | -------------------------------- |
+| eq       | `name: "John"`        | Exact match                      |
+| contains | `name_contains: "jo"` | Case-insensitive substring match |
+| gt       | `age_gt: 30`          | Greater than                     |
+| gte      | `age_gte: 30`         | Greater than or equal            |
+| lt       | `age_lt: 50`          | Less than                        |
+| lte      | `age_lte: 50`         | Less than or equal               |
 
-// Sort by multiple fields
-const sortedPosts = await db.listDocuments('posts', {
-  orderBy: [
-    ['featured', 'desc'],
-    ['createdAt', 'desc']
-  ]
-});
-```
-
-### Complex Queries
-
-#### OR Queries
-
-```typescript
-// OR operation using multiple queries
-const [admins, moderators] = await Promise.all([
-  db.listDocuments('users', {
-    where: [['role', '==', 'admin']]
-  }),
-  db.listDocuments('users', {
-    where: [['role', '==', 'moderator']]
-  })
-]);
-
-const staffMembers = [...admins, ...moderators];
-```
-
-#### Nested Queries
-
-```typescript
-// Query with nested object properties
-const posts = await db.listDocuments('posts', {
-  where: [
-    ['author.role', '==', 'admin'],
-    ['metadata.featured', '==', true]
-  ]
-});
-```
+🧠 Combine multiple filters to form AND queries.
 
 ## Real-time Subscriptions
 
-### Listen to Document Changes
-
-```typescript
-// Listen to a specific document
-const unsubscribe = db.subscribeToDocument('users', 'user-id-123', (user) => {
-  console.log('User updated:', user);
-});
-
-// Stop listening
-unsubscribe();
-```
+Cocobase provides robust real-time capabilities, allowing you to listen for changes in your collections as they happen. Use the `watchCollection` method to receive live updates whenever documents are created, updated, or deleted in a collection. You can also close real-time connections by name using `closeConnection`.
 
 ### Listen to Collection Changes
 
 ```typescript
-// Listen to all documents in a collection
-const unsubscribe = db.subscribeToCollection('posts', (posts) => {
-  console.log(`Collection updated: ${posts.length} posts`);
-});
+/**
+ * watchCollection(
+ *   collection: string,
+ *   callback: (event: { event: string; data: Document<any> }) => void,
+ *   connectionName?: string,
+ *   onOpen?: () => void,
+ *   onError?: () => void
+ * ): Connection
+ */
 
-// Listen with filters
-const unsubscribe = db.subscribeToCollection('posts', (posts) => {
-  console.log(`Active posts: ${posts.length}`);
-}, {
-  where: [['status', '==', 'published']]
-});
+// Example: Watch a collection for real-time changes
+const connection = db.watchCollection(
+  "posts",
+  (event) => {
+    console.log(`Event: ${event.event}`);
+    console.log("Changed document:", event.data);
+  },
+  "posts-connection", // Optional connection name
+  () => {
+    console.log("WebSocket connection established!");
+  },
+  (err) => {
+    console.error("WebSocket error", err);
+  }
+);
+
+// To close the connection later:
+db.closeConnection("posts-connection");
 ```
 
-### Real-time with React
+**Parameters:**
 
-```typescript
-// Custom hook for real-time data
-import { useState, useEffect } from 'react';
-import db from '../lib/cocobase';
+- `collection` (string): The name of the collection to watch.
+- `callback` (function): Called with an object containing the event type (`create`, `update`, or `delete`) and the changed document data.
+- `connectionName` (string, optional): A custom name for the connection, useful for managing multiple connections.
+- `onOpen` (function, optional): Called when the WebSocket connection is established.
+- `onError` (function, optional): Called if there is a WebSocket error.
 
-function useRealTimeDocument(collection: string, id: string) {
-  const [document, setDocument] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = db.subscribeToDocument(collection, id, (doc) => {
-      setDocument(doc);
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, [collection, id]);
-
-  return { document, loading };
-}
-
-// Usage in component
-function UserProfile({ userId }) {
-  const { document: user, loading } = useRealTimeDocument('users', userId);
-
-  if (loading) return <div>Loading...</div>;
-
-  return (
-    <div>
-      <h1>{user.name}</h1>
-      <p>{user.email}</p>
-    </div>
-  );
-}
-```
+**Closing Connections:**
+To close a real-time connection, call `db.closeConnection(name)` with the connection name you provided to `watchCollection`.
 
 ## TypeScript Integration
 
@@ -386,7 +229,7 @@ interface User {
   name: string;
   email: string;
   age: number;
-  role: 'admin' | 'user' | 'moderator';
+  role: "admin" | "user" | "moderator";
   skills: string[];
   createdAt: Date;
   updatedAt: Date;
@@ -404,24 +247,25 @@ interface Post {
 }
 
 // Use generic types for type safety
-const users = db.collection<User>('users');
-const posts = db.collection<Post>('posts');
+const users = db.collection<User>("users");
+const posts = db.collection<Post>("posts");
 
 // Now you get full type safety
 const user = await users.create({
-  name: 'John Doe',
-  email: 'john@example.com',
+  name: "John Doe",
+  email: "john@example.com",
   age: 30,
-  role: 'user',
-  skills: ['javascript', 'react'],
+  role: "user",
+  skills: ["javascript", "react"],
   createdAt: new Date(),
-  updatedAt: new Date()
+  updatedAt: new Date(),
 });
 
 // TypeScript will catch errors
 const invalidUser = await users.create({
-  name: 'Jane',
-  email: 'jane@example.com',
-  age: 'thirty', // Error: Type 'string' is not assignable to type 'number'
-  role: 'superuser', // Error: Type 'superuser' is not assignable to type 'admin' | 'user' | 'moderator'
+  name: "Jane",
+  email: "jane@example.com",
+  age: "thirty", // Error: Type 'string' is not assignable to type 'number'
+  role: "superuser", // Error: Type 'superuser' is not assignable to type 'admin' | 'user' | 'moderator'
 });
+```

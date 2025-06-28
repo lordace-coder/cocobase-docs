@@ -223,8 +223,8 @@ const db = new Cocobase({ apiKey: "your-api-key" });
 
 - **[Documentation](https://docs.cocobase.buzz)** - Comprehensive guides and API reference
 - **[Examples](https://github.com/cocobase/examples)** - Sample projects and tutorials
+- **[SDK Source Code](https://github.com/lordace-coder/coco_base_js)** - Official Cocobase JavaScript SDK repository
 - **[Community](https://discord.gg/cocobase)** - Join our developer community
-
 
 ## 🤝 Community & Support
 
