@@ -1,5 +1,5 @@
 --- 
-title: Daily Journal
+title: Sample Project
 # slug: /sample
 sidebar-position: 5
 ---
